@@ -2,8 +2,21 @@ import React, { Component } from "react";
 import NewsItems from "./NewsItems";
 import Navbar from "./Navbar";
 import Spinner from "./Spinner";
+import PropTypes from 'prop-types'
+
 
 export class News extends Component {
+static defaultProps= {
+
+  pageSize:9,
+  category:"general",
+}
+static propTypes= {
+
+  pageSize:PropTypes.number,
+  category:PropTypes.string,
+}
+
   article = [
     {
       source: {
@@ -335,7 +348,7 @@ totalpage=1;
 
   async componentDidMount(pagenum) {
     this.setState({loading:true});
-    let url=`https://newsapi.org/v2/top-headlines?country=us&apiKey=ef6e77ca6c474213b53e1b47520499a2&page=${pagenum}&pageSize=${this.props.pageSize}`;
+    let url=`https://newsapi.org/v2/top-headlines?category=${this.props.category}&apiKey=ef6e77ca6c474213b53e1b47520499a2&page=${pagenum}&pageSize=${this.props.pageSize}`;
     let data =await fetch(url);
     let parsedData=await data.json();
     this.setState({loading:false});
