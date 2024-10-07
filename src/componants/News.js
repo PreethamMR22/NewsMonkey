@@ -2,20 +2,18 @@ import React, { Component } from "react";
 import NewsItems from "./NewsItems";
 import Navbar from "./Navbar";
 import Spinner from "./Spinner";
-import PropTypes from 'prop-types'
-
+import PropTypes from "prop-types";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 export class News extends Component {
-static defaultProps= {
-
-  pageSize:9,
-  category:"general",
-}
-static propTypes= {
-
-  pageSize:PropTypes.number,
-  category:PropTypes.string,
-}
+  static defaultProps = {
+    pageSize: 9,
+    category: "general",
+  };
+  static propTypes = {
+    pageSize: PropTypes.number,
+    category: PropTypes.string,
+  };
 
   article = [
     {
@@ -185,7 +183,7 @@ static propTypes= {
       content:
         "Larry Radloff/Icon Sportswire via Getty Images\r\nMilwaukee Brewers shortstop Willy Adames confirmed to reporters on Thursday that he not only told New York Mets designated hitter Jesse Winker to meet … [+2616 chars]",
     },
-    
+
     {
       source: {
         id: null,
@@ -341,60 +339,103 @@ static propTypes= {
     this.state = {
       article: this.article,
       loading: true,
-      page:2,
+      page: 2,
+      totalResults:0,
     };
   }
-totalpage=1;
-
+  totalpage = 1;
+ capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
   async componentDidMount(pagenum) {
-    this.setState({loading:true});
-    let url=`https://newsapi.org/v2/top-headlines?category=${this.props.category}&apiKey=ef6e77ca6c474213b53e1b47520499a2&page=${pagenum}&pageSize=${this.props.pageSize}`;
-    let data =await fetch(url);
-    let parsedData=await data.json();
-    this.setState({loading:false});
-    console.log(parsedData.totalResults);
-    this.setState({article:parsedData.articles})
-    this.totalpage=parsedData.totalResults/this.props.pageSize + 1;
-    console.log(this.totalpage);
-  }
-  HandlePrevClick=async ()=> {
+    this.setState({ loading: true });
+    
+   document.title= "NewsMonkey- " + this.capitalizeFirstLetter(this.props.category)
+    let url = `https://newsapi.org/v2/top-headlines?category=${this.props.category}&apiKey=fba1c234ebab45ef9921747cd20d7fe9&page=${pagenum}&pageSize=${this.props.pageSize}`;
+    let data = await fetch(url);
+    let parsedData = await data.json();
+    this.setState({ loading: false });
+    this.setState({totalResults:parsedData.totalResults});
+    this.setState({ article: parsedData.articles });
+    this.totalpage = parsedData.totalResults / this.props.pageSize + 1;
 
-    this.setState({page:this.state.page-1});
+  }
+
+  fetchMoreData=async ()=> {
+    this.setState({page:this.state.page+1});
+    let url = `https://newsapi.org/v2/top-headlines?category=${this.props.category}&apiKey=fba1c234ebab45ef9921747cd20d7fe9&page=${this.state.page}&pageSize=${this.props.pageSize}`;
+    let data = await fetch(url);
+    let parsedData = await data.json();
+    this.setState({ loading: false });
+    this.setState({totalResults:parsedData.totalResults});
+    this.setState({ article: this.state.article.concat( parsedData.articles) });
+    this.totalpage = parsedData.totalResults / this.props.pageSize + 1;
+
+  }
+
+  HandlePrevClick = async () => {
+    this.setState({ page: this.state.page - 1 });
     this.componentDidMount(this.state.page);
-  }
- HandleNextClick=async ()=> {
-   this.setState({page:this.state.page+1});
-   this.componentDidMount(this.state.page);
-  }
+  };
+  HandleNextClick = async () => {
+    this.setState({ page: this.state.page + 1 });
+    this.componentDidMount(this.state.page);
+  };
   render() {
     return (
-   
       <div className="container my-3">
-        
         <h1 className="headline text-center">NewsMonkey - Top headlines</h1>
         {this.state.loading && <Spinner></Spinner>}
-     <div className="row">
-          {!this.state.loading && this.state.article.map((elem) => {
-            return (
-              <div className="col-md-4" key={elem.url}>
-               
-                <NewsItems
-                  newsUrl={elem.url}
-                  title={elem.title}
-                  imgUrl={elem.urlToImage}
-                  description={elem.description}
-                ></NewsItems>
-              </div>
-            );
-          })}
+        
+        <InfiniteScroll 
+          style={{overflow:"hidden"}}
+          dataLength={this.state.article.length}
+          next={this.fetchMoreData}
+          hasMore={this.state.article.length!==this.state.totalResults}
+          loader={<Spinner></Spinner>}
+        >
+
+        <div className="row">
+          {
+            this.state.article.map((elem) => {
+              return (
+                <div className="col-md-4" key={elem.url}>
+                  <NewsItems
+                    newsUrl={elem.url}
+                    title={elem.title}
+                    imgUrl={elem.urlToImage}
+                    description={elem.description}
+                    date={new Date(elem.publishedAt).toDateString()}
+                    author={elem.author}
+                    name={elem.source.name}
+                    
+                  ></NewsItems>
+                  
+                </div>
+              );
+            })}
         </div>
+        </InfiniteScroll>
 
         <div className="d-flex justify-content-between container">
-            <button type="button" onClick={this.HandlePrevClick} disabled={this.state.page<=1?true:false} className="btn btn-dark"> <i className="fa-solid fa-arrow-left"></i> Prev</button>
-            <button type="button"  onClick={this.HandleNextClick} disabled={this.state.page<=this.totalpage?false:true}className="btn btn-dark">Next <i className="fa-solid fa-arrow-right"></i></button>
-          </div>
-
-
+          <button
+            type="button"
+            onClick={this.HandlePrevClick}
+            disabled={this.state.page <= 1 ? true : false}
+            className="btn btn-dark"
+          >
+            {" "}
+            <i className="fa-solid fa-arrow-left"></i> Prev
+          </button>
+          <button
+            type="button"
+            onClick={this.HandleNextClick}
+            disabled={this.state.page <= this.totalpage ? false : true}
+            className="btn btn-dark"
+          >
+            Next <i className="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
       </div>
     );
   }
