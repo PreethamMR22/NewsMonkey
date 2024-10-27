@@ -383,7 +383,7 @@ export class News extends Component {
   };
   render() {
     return (
-      <div className="container my-3">
+      <div className="container my-3  " style={{ paddingTop: "5rem" }}>
         <h1 className="headline text-center">NewsMonkey - Top headlines</h1>
         {this.state.loading && <Spinner></Spinner>}
         
