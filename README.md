@@ -69,9 +69,9 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
 
-
-<b>How to Run </b>
-first cd to the file in which the actual program is there and do 
+### How to Run
+<b> 
+first cd to the file in which the actual program is there and do </b>
 <i>npm install</i> this installs the files that is there in the gitignore files. exp: node modules
 Now to open the server
 <i>npm run start</i>
